@@ -155,7 +155,8 @@ impl Repo {
     /// Finds the repository `start` lies in: the first ancestor (itself included) with a
     /// `CATALOG.toml` carrying `[repo] name`, which must have a `Cargo.toml` beside it.
     pub fn locate(start: &Path) -> Result<Repo, String> {
-        let start = fs::canonicalize(start).map_err(|e| format!("{}: {e}", start.display()))?;
+        // Absolute, not canonical: a Windows canonical path carries the verbatim prefix in messages.
+        let start = std::path::absolute(start).map_err(|e| format!("{}: {e}", start.display()))?;
         let mut dir = Some(start.as_path());
         while let Some(candidate) = dir {
             let catalog = candidate.join("CATALOG.toml");
@@ -308,8 +309,10 @@ impl Rendered {
 }
 
 /// The first fenced ```` ```toml ```` block of `readme` that holds a `[[component]]` table.
+/// A checkout with CRLF line endings (Windows, `core.autocrlf`) yields the same entry.
 pub fn component_entry(readme: &str) -> Option<String> {
-    let mut rest = readme;
+    let readme = readme.replace("\r\n", "\n");
+    let mut rest = readme.as_str();
     while let Some(start) = rest.find("```toml\n") {
         let body = &rest[start + "```toml\n".len()..];
         let end = body.find("\n```")?;
@@ -532,6 +535,15 @@ mod tests {
     }
 
     #[test]
+    fn the_component_entry_survives_crlf_line_endings() {
+        let readme = "# c\r\n\r\n```toml\r\n[[component]]\r\ncrate = \"pub-k-c\"\r\n```\r\n";
+        assert_eq!(
+            component_entry(readme).as_deref(),
+            Some("[[component]]\ncrate = \"pub-k-c\"\n")
+        );
+    }
+
+    #[test]
     fn a_repository_is_found_from_a_directory_inside_it() {
         let root = scratch("repo");
         fs::write(root.join("Cargo.toml"), "[workspace]\n").unwrap();
@@ -540,7 +552,7 @@ mod tests {
         fs::create_dir_all(&inside).unwrap();
         let repo = Repo::locate(&inside).unwrap();
         assert_eq!(repo.name, "kernel");
-        assert_eq!(repo.root, fs::canonicalize(&root).unwrap());
+        assert_eq!(repo.root, std::path::absolute(&root).unwrap());
         let _ = fs::remove_dir_all(&root);
     }
 
