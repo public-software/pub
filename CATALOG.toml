@@ -22,3 +22,13 @@ summary     = "The org CLI: scaffold repos from templates, lint conventions, syn
 # specs     = []
 # provides  = ["public:area/iface@1"]
 # requires  = []
+
+[[component]]
+crate     = "pub-cli"            # binary: pub
+kind      = "app"
+ledger    = "org CLI"
+readiness = "seed"
+effort    = 3
+specs     = []
+provides  = []
+requires  = []

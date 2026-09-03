@@ -13,11 +13,22 @@ Planned components: pub new · pub check · pub catalog sync/render · pub suite
 
 ## In 30 seconds
 
-_A runnable example goes here the day the first crate lands._
+```sh
+cargo install --git https://github.com/public-software/pub pub-cli   # installs the `pub` binary
+git clone https://github.com/public-software/catalog && cd catalog
+pub catalog validate            # catalog/catalog.toml against its rules
+pub catalog render readme       # the ring tables the organization README embeds
+pub catalog render json         # every repository as a JSON array
+```
 
 ## What it does
 
+- `pub catalog validate` — checks `catalog.toml` (rings, layers, waves, names, uniqueness) and names every problem.
+- `pub catalog render readme | json` — prints views of a valid catalog; `readme` is byte-for-byte what the bootstrap kit's renderer produces, so the organization README can be generated from either.
+
 ## What it does not do (yet)
+
+- `pub catalog sync` (descriptions, topics, custom properties and labels from the catalog), `pub new`, `pub check`, `pub suite pull/build`, `pub labels sync`, `pub a11y-audit`. The bootstrap kit's steps 05–07 do the sync work until then.
 
 ## Status
 
