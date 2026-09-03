@@ -1,0 +1,24 @@
+# Machine-readable entry for this repository. Aggregated into public-software/catalog.
+# Edit here; `pub catalog sync` propagates description, topics and custom properties to GitHub.
+
+[repo]
+name        = "pub"
+ring        = "spine"          # spine | platform | system | domain | standards
+layers      = ["L2"]
+wave        = 1
+tier        = "incubating"        # incubating | stable | core | archived
+maintainers = ["maint-pub"]
+summary     = "The org CLI: scaffold repos from templates, lint conventions, sync catalog → GitHub, pull and build the whole suite."
+
+# One [[component]] per crate, app or service this workspace publishes.
+# planned: pub new · pub check · pub catalog sync/render · pub suite pull/build · pub labels sync · pub a11y-audit
+#
+# [[component]]
+# crate     = "pub-pub-example"
+# kind      = "lib"                # lib | app | service | plugin | spec
+# ledger    = "<ledger entry name>"
+# readiness = "none"               # shipped | partial | seed | none
+# effort    = 3
+# specs     = []
+# provides  = ["public:area/iface@1"]
+# requires  = []
