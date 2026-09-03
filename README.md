@@ -19,22 +19,25 @@ git clone https://github.com/public-software/catalog && cd catalog
 pub catalog validate            # catalog/catalog.toml against its rules
 pub catalog render readme       # the ring tables the organization README embeds
 pub catalog render json         # every repository as a JSON array
+cd ../kernel && pub new lib sched   # crates/pub-kernel-sched from the skeleton set, plus its CATALOG.toml entry
 ```
 
 ## What it does
 
 - `pub catalog validate` — checks `catalog.toml` (rings, layers, waves, names, uniqueness) and names every problem.
 - `pub catalog render readme | json` — prints views of a valid catalog; `readme` is byte-for-byte what the bootstrap kit's renderer produces, so the organization README can be generated from either.
+- `pub new <kind> <component> [--dir PATH] [--templates PATH] [--ref REF]` — renders a crate of kind `lib`, `app`, `service`, `plugin` or `spec` from the skeleton set into `crates/pub-<repo>-<component>/` of the repository named by `CATALOG.toml`, byte-for-byte what the skeleton's reference renderer produces, and prints the `[[component]]` entry to add. The skeleton comes from a local checkout of `templates` (or the bootstrap kit) with `--templates`, else from a shallow clone at `--ref`. Refuses an existing path, a malformed component and an unknown placeholder before writing.
 - `pub catalog sync [--labels labels.json] [--repo NAME]... [--dry-run] [--jobs N]` — makes every repository on GitHub match the catalog: description (`<layer> · <purpose> · wave <n>`), homepage, topics, custom properties and, with `--labels`, the label set. Reads before every write through the `gh` CLI (its login, its rate-limit handling); a converged organization sees reads only. `--dry-run` prints the writes it would send.
 
 ## What it does not do (yet)
 
-- Create repositories, rulesets, teams, milestones, security settings or CodeQL setup — the bootstrap kit does those. `pub new`, `pub check`, `pub suite pull/build`, `pub a11y-audit` are planned.
+- Create repositories, rulesets, teams, milestones, security settings or CodeQL setup — the bootstrap kit does those. `pub check`, `pub suite pull/build`, `pub labels sync`, `pub a11y-audit` are planned.
 
 ## Status
 
 | Ledger entry | Readiness | Next |
 |---|---|---|
+| org CLI (`pub-cli`) | partial: `pub catalog validate/render/sync`, `pub new` | `pub check` |
 
 ## How it fits the suite
 
