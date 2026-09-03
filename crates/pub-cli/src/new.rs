@@ -212,6 +212,8 @@ impl Skeleton {
         reference: Option<&str>,
     ) -> Result<Skeleton, String> {
         let rel = Path::new("crate").join(kind.name());
+        // Named with a forward slash on every platform: the skeleton set's own layout, not a native path.
+        let rel_name = format!("crate/{}", kind.name());
         if let Some(root) = templates {
             for candidate in [root.join(&rel), root.join("templates/skeleton").join(&rel)] {
                 if candidate.is_dir() {
@@ -222,9 +224,8 @@ impl Skeleton {
                 }
             }
             return Err(format!(
-                "{} carries no {}: pass a templates checkout or the bootstrap kit",
-                root.display(),
-                rel.display()
+                "{} carries no {rel_name}: pass a templates checkout or the bootstrap kit",
+                root.display()
             ));
         }
         let reference = reference.unwrap_or(TEMPLATES_REF);
@@ -254,8 +255,7 @@ impl Skeleton {
         if !dir.is_dir() {
             let _ = fs::remove_dir_all(&clone);
             return Err(format!(
-                "{TEMPLATES_URL} at {reference} carries no {} yet: pass --templates <path> to a checkout that does",
-                rel.display()
+                "{TEMPLATES_URL} at {reference} carries no {rel_name} yet: pass --templates <path> to a checkout that does"
             ));
         }
         Ok(Skeleton {

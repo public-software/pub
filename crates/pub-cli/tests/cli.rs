@@ -129,7 +129,8 @@ fn lib_renders_the_crate_and_prints_its_component_entry() {
     assert!(lib.contains("pub_kernel_sched::NAME"), "{lib}");
     assert!(lib.contains("github.com/public-software/kernel"), "{lib}");
 
-    let printed = stdout(&out);
+    // Paths print natively; compare with forward slashes so Windows agrees.
+    let printed = stdout(&out).replace('\\', "/");
     assert!(printed.contains("[[component]]"), "{printed}");
     assert!(
         printed.contains("crate     = \"pub-kernel-sched\""),
