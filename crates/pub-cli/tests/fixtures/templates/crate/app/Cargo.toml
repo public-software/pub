@@ -1,0 +1,19 @@
+[package]
+name = "{{CRATE}}"
+description = "The {{COMPONENT}} command of {{REPO}}"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+# The binary is what a user types; the crate keeps the {{CRATE_PREFIX}}-{{REPO}}-<name> name.
+[[bin]]
+name = "{{COMPONENT}}"
+path = "src/main.rs"
+
+[lints]
+workspace = true

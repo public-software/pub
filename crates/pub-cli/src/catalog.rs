@@ -274,8 +274,9 @@ mod tests {
 
     #[test]
     fn wrong_ring_names_the_field() {
-        let cat = Catalog::parse(&FIXTURE.replace("ring     = \"system\"", "ring     = \"sysem\""))
-            .unwrap();
+        let cat =
+            Catalog::parse(&FIXTURE.replace("ring     = \"system\"", "ring     = \"nowhere\""))
+                .unwrap();
         let problems = cat.validate();
         assert_eq!(problems.len(), 1);
         assert!(

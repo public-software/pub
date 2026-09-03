@@ -3,10 +3,12 @@
 //! Version 0 knows the catalog: `pub catalog validate` checks `catalog.toml` against its rules,
 //! `pub catalog render readme|json` prints a view of a valid catalog, `pub catalog sync` makes
 //! every repository on GitHub match it (description, homepage, topics, custom properties and,
-//! with `--labels`, the label set), reading before every write.
+//! with `--labels`, the label set), reading before every write. `pub new <kind> <component>`
+//! renders a crate from the skeleton set into the current repository.
 
 mod catalog;
 mod gh;
+mod new;
 mod render;
 mod sync;
 
@@ -35,6 +37,23 @@ enum Command {
         catalog: Option<PathBuf>,
         #[command(subcommand)]
         action: CatalogAction,
+    },
+    /// A new crate from the skeleton set: `crates/pub-<repo>-<component>` in this repository
+    New {
+        /// The crate kind
+        kind: new::Kind,
+        /// The component name: lowercase words joined by hyphens
+        component: String,
+        /// The repository (or a directory inside it); default: the current directory
+        #[arg(long, value_name = "PATH")]
+        dir: Option<PathBuf>,
+        /// A templates checkout (`crate/<kind>` under it) or the bootstrap kit; default: a shallow
+        /// clone of the templates repository
+        #[arg(long, value_name = "PATH")]
+        templates: Option<PathBuf>,
+        /// The ref of the templates repository to clone
+        #[arg(long = "ref", value_name = "REF", default_value = new::TEMPLATES_REF)]
+        reference: String,
     },
 }
 
@@ -76,6 +95,31 @@ fn main() -> ExitCode {
     let cli = Cli::parse();
     match cli.command {
         Command::Catalog { catalog, action } => run_catalog(catalog, action),
+        Command::New {
+            kind,
+            component,
+            dir,
+            templates,
+            reference,
+        } => {
+            let opts = new::Options {
+                kind,
+                component,
+                dir,
+                templates,
+                reference: Some(reference),
+            };
+            match new::run(&opts) {
+                Ok(out) => {
+                    print!("{out}");
+                    ExitCode::SUCCESS
+                }
+                Err(problem) => {
+                    eprintln!("pub new: {problem}");
+                    ExitCode::FAILURE
+                }
+            }
+        }
     }
 }
 

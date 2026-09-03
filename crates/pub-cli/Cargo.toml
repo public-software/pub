@@ -1,8 +1,8 @@
 [package]
 name = "pub-cli"
-description = "The Public Software organization CLI: the catalog, validated and rendered"
+description = "The Public Software organization CLI: the catalog, validated, rendered and synced; crates from the skeleton set"
 readme = "README.md"
-keywords = ["public-software", "catalog", "cli"]
+keywords = ["public-software", "catalog", "scaffold", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 version.workspace = true
 edition.workspace = true

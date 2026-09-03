@@ -1,0 +1,19 @@
+[package]
+name = "{{CRATE}}"
+description = "The {{DAEMON_PREFIX}}-{{COMPONENT}} service of {{REPO}}"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+
+# The library holds the logic (testable without a process); the daemon is the binary around it.
+[[bin]]
+name = "{{DAEMON_PREFIX}}-{{COMPONENT}}"
+path = "src/main.rs"
+
+[lints]
+workspace = true
