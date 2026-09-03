@@ -1,11 +1,16 @@
 //! `pub` — the Public Software organization CLI.
 //!
 //! Version 0 knows the catalog: `pub catalog validate` checks `catalog.toml` against its rules,
-//! `pub catalog render readme|json` prints a view of a valid catalog.
+//! `pub catalog render readme|json` prints a view of a valid catalog, `pub catalog sync` makes
+//! every repository on GitHub match it (description, homepage, topics, custom properties and,
+//! with `--labels`, the label set), reading before every write.
 
 mod catalog;
+mod gh;
 mod render;
+mod sync;
 
+use std::fs;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
@@ -41,6 +46,21 @@ enum CatalogAction {
     Render {
         #[command(subcommand)]
         view: View,
+    },
+    /// Make every repository on GitHub match the catalog (read-then-diff, through `gh`)
+    Sync {
+        /// Also converge this label set (a JSON array of {name, color, description})
+        #[arg(long, value_name = "FILE")]
+        labels: Option<PathBuf>,
+        /// Only these repositories (repeatable)
+        #[arg(long = "repo", value_name = "NAME")]
+        repos: Vec<String>,
+        /// Print the writes instead of sending them
+        #[arg(long)]
+        dry_run: bool,
+        /// Repositories worked on at once
+        #[arg(long, default_value_t = 8)]
+        jobs: usize,
     },
 }
 
@@ -91,5 +111,68 @@ fn run_catalog(path: Option<PathBuf>, action: CatalogAction) -> ExitCode {
                 ExitCode::FAILURE
             }
         },
+        CatalogAction::Sync {
+            labels,
+            repos,
+            dry_run,
+            jobs,
+        } => run_sync(&cat, labels, repos, dry_run, jobs),
     }
+}
+
+fn run_sync(
+    cat: &Catalog,
+    labels: Option<PathBuf>,
+    only: Vec<String>,
+    dry_run: bool,
+    jobs: usize,
+) -> ExitCode {
+    let labels = match labels.map(read_labels) {
+        Some(Ok(set)) => Some(set),
+        Some(Err(problem)) => {
+            eprintln!("{problem}");
+            return ExitCode::FAILURE;
+        }
+        None => None,
+    };
+    let opts = sync::Options {
+        dry_run,
+        jobs,
+        only,
+        labels,
+    };
+    let outcomes = sync::run(cat, &opts);
+    let (mut writes, mut failures) = (0usize, 0usize);
+    for outcome in &outcomes {
+        writes += outcome.writes.len();
+        if dry_run {
+            for w in &outcome.writes {
+                println!("  $ {} {} — {}", w.method, w.path, w.what);
+            }
+        }
+        match (&outcome.error, outcome.writes.len()) {
+            (Some(error), _) => {
+                failures += 1;
+                eprintln!("  ✗ {}: {error}", outcome.name);
+            }
+            (None, 0) => println!("  · {} (up to date)", outcome.name),
+            (None, n) if dry_run => println!("  → {} ({n} writes planned)", outcome.name),
+            (None, n) => println!("  ✓ {} ({n} changes)", outcome.name),
+        }
+    }
+    println!(
+        "  {} repositories, {writes} writes{}, {failures} failures",
+        outcomes.len(),
+        if dry_run { " planned" } else { "" }
+    );
+    if failures == 0 {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
+fn read_labels(path: PathBuf) -> Result<Vec<sync::Label>, String> {
+    let text = fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))
 }

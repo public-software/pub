@@ -25,10 +25,11 @@ pub catalog render json         # every repository as a JSON array
 
 - `pub catalog validate` — checks `catalog.toml` (rings, layers, waves, names, uniqueness) and names every problem.
 - `pub catalog render readme | json` — prints views of a valid catalog; `readme` is byte-for-byte what the bootstrap kit's renderer produces, so the organization README can be generated from either.
+- `pub catalog sync [--labels labels.json] [--repo NAME]... [--dry-run] [--jobs N]` — makes every repository on GitHub match the catalog: description (`<layer> · <purpose> · wave <n>`), homepage, topics, custom properties and, with `--labels`, the label set. Reads before every write through the `gh` CLI (its login, its rate-limit handling); a converged organization sees reads only. `--dry-run` prints the writes it would send.
 
 ## What it does not do (yet)
 
-- `pub catalog sync` (descriptions, topics, custom properties and labels from the catalog), `pub new`, `pub check`, `pub suite pull/build`, `pub labels sync`, `pub a11y-audit`. The bootstrap kit's steps 05–07 do the sync work until then.
+- Create repositories, rulesets, teams, milestones, security settings or CodeQL setup — the bootstrap kit does those. `pub new`, `pub check`, `pub suite pull/build`, `pub a11y-audit` are planned.
 
 ## Status
 

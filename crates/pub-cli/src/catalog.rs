@@ -42,6 +42,8 @@ pub struct Meta {
     pub version: u32,
     /// The GitHub organization every repository belongs to.
     pub org: String,
+    /// The organization's site (`https://…`, no path); a repository's homepage is `<site>/<name>`.
+    pub site: String,
 }
 
 /// One repository. Field order is the order of the JSON view.
@@ -104,6 +106,12 @@ impl Catalog {
             problems.push(format!(
                 "catalog.catalog.org: {:?} is not a GitHub login",
                 self.catalog.org
+            ));
+        }
+        if !is_site(&self.catalog.site) {
+            problems.push(format!(
+                "catalog.catalog.site: {:?} is not an https:// origin without a path",
+                self.catalog.site
             ));
         }
         if self.repo.is_empty() {
@@ -198,6 +206,13 @@ pub fn is_login(login: &str) -> bool {
     }
 }
 
+/// `https://<host>` with no path, whitespace or trailing slash.
+pub fn is_site(site: &str) -> bool {
+    site.strip_prefix("https://").is_some_and(|host| {
+        !host.is_empty() && !host.contains('/') && !host.chars().any(char::is_whitespace)
+    })
+}
+
 /// `all`, or `L<n>` with `0 <= n <= 18` and no leading zero.
 pub fn is_layer(layer: &str) -> bool {
     if layer == "all" {
@@ -218,6 +233,7 @@ pub(crate) const FIXTURE: &str = r#"
 [catalog]
 version = 1
 org     = "public-software"
+site    = "https://publicsoftware.dev"
 
 [[repo]]
 name     = "catalog"
